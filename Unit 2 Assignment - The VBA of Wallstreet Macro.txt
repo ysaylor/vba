@@ -1,0 +1,149 @@
+'The objective is to categorize, summarize and display stock ticket symbols for all worksheets in the workbook titled, "Multi_Year_Stock_Data.xlsx" with the following information:
+
+    • Yearly change from the first of the year’s stock opened price to the end of the year’s closing price
+    • The percentage change from the first of the year’s stock opened price to the end of the year’s closing price. The           positive change would be highlighted in green and negative change would be highlighted in red.
+    • The total stock volume amount
+
+'The data sets are located in all active worksheets on the workbook titled, "Multi_Year_Stock_data.xlsx". The date sets within each worksheet that will be used are the infinite number of rows until the end of the data table as well as the specified columns named <ticker>, <open>, <close>, and <vol>. 
+
+Sub Multi_Year_Stock_Moderate()
+
+  'Set variable for worksheets
+  Dim ws As Worksheet
+
+  'Create loop for all worksheets
+  For Each ws In ThisWorkbook.Sheets
+    ws.Activate
+
+    'Print "Ticker Symbol" as header in Column I
+    ws.Range("I1").Value = "Ticker"
+   
+    'Print "Yearly Change" as header in Column J
+    ws.Range("J1").Value = "Yearly Change"
+
+    'Print "Percent Change" as header in Column K
+    ws.Range("K1").Value = "Percent Change"
+  
+    'Print "Total Stock Volume" as header in Column L
+    ws.Range("L1").Value = "Total Stock Volume"
+    
+    ' Set variable for holding the stock's ticker symbol
+    Dim Ticker_Symbol As String
+
+    ' Set first variable for holding the stock's volume total amount per stock's ticker symbol
+    Dim StockVol_Total As Double
+    StockVol_Total = 0
+
+    'Set first variable for holding the stock's price amount the day it opened at the first of the year
+    Dim PriceOpen_Jan As Single
+    PriceOpen_Jan = 0
+
+    'Set first variable for the total stock's yearly change
+    Dim Yearly_Change As Single
+    Yearly_Change = 0
+
+    'Set first variable for the yearly stock's percentage change
+    Dim Percent_Change As Single
+    Percent_Change = 0
+    
+    'Set variable for stock's percent change percentage format in Column J
+    Dim Percent_ChangeList As String
+    
+    ' Determine the Last Row
+    LastRow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+
+    ' Keep tabs on the location for each stock's ticker symbol in the summary list
+    Dim Sum_List_Row As Integer
+    Sum_List_Row = 2
+
+    ' Loop through all stock tickers
+    For i = 2 To LastRow
+
+    ' Check if we are still within the same stock's ticker symbol, then...
+    If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
+
+      ' Set the stock's ticker symbol
+      Ticker_Symbol = ws.Cells(i, 1).Value
+
+      'Add to the stock's yearly change
+      Yearly_Change = ws.Cells(i, 6).Value - PriceOpen_Jan
+      
+      'If the stock's open price does not equal to 0, then apply the percentage change formula
+      If PriceOpen_Jan <> 0 Then
+        Percent_Change = Yearly_Change / PriceOpen_Jan
+      'Otherwise, set the stock's yearly change and percent change to 0
+       ElseIf Yearly_Change = 0 Then
+        Percent_Change = 0
+        End If
+
+      'Format the Percent Change cells in Column J to the percentage format
+      Percent_ChangeList = FormatPercent(Percent_Change, 2)
+     
+      ' Add to the stock's vol total amt
+      StockVol_Total = StockVol_Total + ws.Cells(i, 7).Value
+
+      ' Print the stock's ticker symbol in the summary list
+      ws.Range("I" & Sum_List_Row).Value = Ticker_Symbol
+
+      'Print the stock's yearly price change in the summary list
+      ws.Range("J" & Sum_List_Row).Value = Yearly_Change
+   
+      'Print the stock's yearly percentage change in the summary list
+      ws.Range("K" & Sum_List_Row).Value = Percent_ChangeList
+  
+
+      ' Print the stock's vol total Amount to the summary list
+      ws.Range("L" & Sum_List_Row).Value = StockVol_Total
+
+
+      ' Add one to the summary list row
+      Sum_List_Row = Sum_List_Row + 1
+      
+      ' Reset the stock's percentage change amt
+      StockVol_Total = 0
+
+      ' Reset the stock's vol total amt
+      StockVol_Total = 0
+
+      ' Reset the stock's vol total amt
+      StockVol_Total = 0
+
+    ' Otherwise if the cell immediately following a row is the same stock ticker symbol,...
+    Else
+
+      ' Add to the stock's vol total amt
+      StockVol_Total = StockVol_Total + ws.Cells(i, 7).Value
+      'Check if still using the same stock ticker symbol, then…
+      If ws.Cells(i - 1, 1).Value <> ws.Cells(i, 1).Value Then
+
+        'Add to the stock's open price
+         PriceOpen_Jan = ws.Cells(i, 3).Value
+      
+      'Check if the yearly change values are greater than or equals to 0, then…
+      If ws.Range("J" & Sum_List_Row).Value >= 0 Then
+    
+      'Format the cell to the color of green to indicate that the value is positive
+       ws.Range("J" & Sum_List_Row).Interior.ColorIndex = 4
+
+      'Otherwise, the yearly change value is negative and the cell's format color should be red
+       Else
+
+        ws.Range("J" & Sum_List_Row).Interior.ColorIndex = 3
+
+      'End if statement for conditional format for Yearly Change column
+      End If
+      
+    'End if statement for stock's open price
+    End If
+    
+  'End if statement for stock's ticker symbol
+  End If
+ 
+ 'Go to the next row in the loop
+ Next i
+
+'Go to the next worksheet in the loop
+Next ws
+
+'End subroutine
+End Sub
